@@ -1,5 +1,11 @@
 package gwf
 
+import (
+	"fmt"
+
+	"github.com/joho/godotenv"
+)
+
 const version = "0.0.1"
 
 type GWF struct {
@@ -19,6 +25,17 @@ func (g *GWF) New(rootPath string) error {
 		return err
 	}
 
+	err = g.checkDotEnv(rootPath)
+	if err != nil {
+		return err
+	}
+
+	// read .env file
+	err = godotenv.Load(rootPath + "/.env")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -29,6 +46,15 @@ func (g *GWF) Init(p initPaths) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (g *GWF) checkDotEnv(path string) error {
+	err := g.CreateFileIfNotExists(fmt.Sprintf("%s/.env", path))
+	if err != nil {
+		return err
 	}
 
 	return nil
