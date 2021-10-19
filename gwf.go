@@ -2,6 +2,9 @@ package gwf
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -9,9 +12,12 @@ import (
 const version = "0.0.1"
 
 type GWF struct {
-	AppName string
-	Debug   bool
-	Version string
+	AppName  string
+	Debug    bool
+	Version  string
+	ErrorLog *log.Logger
+	InfoLog  *log.Logger
+	RootPath string
 }
 
 func (g *GWF) New(rootPath string) error {
@@ -36,6 +42,13 @@ func (g *GWF) New(rootPath string) error {
 		return err
 	}
 
+	// create loggers
+	infoLog, errorLog := g.startLoggers()
+	g.InfoLog = infoLog
+	g.ErrorLog = errorLog
+	g.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
+	g.Version = version
+
 	return nil
 }
 
@@ -58,4 +71,14 @@ func (g *GWF) checkDotEnv(path string) error {
 	}
 
 	return nil
+}
+
+func (g *GWF) startLoggers() (*log.Logger, *log.Logger) {
+	var infoLog *log.Logger
+	var errorLog *log.Logger
+
+	infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+	return infoLog, errorLog
 }
