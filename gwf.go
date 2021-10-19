@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ck3g/gwf/render"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 )
@@ -22,6 +23,7 @@ type GWF struct {
 	InfoLog  *log.Logger
 	RootPath string
 	Routes   *chi.Mux
+	Render   *render.Render
 	config   config
 }
 
@@ -65,6 +67,8 @@ func (g *GWF) New(rootPath string) error {
 		port:     os.Getenv("PORT"),
 		renderer: os.Getenv("RENDERER"),
 	}
+
+	g.Render = g.createRenderer(g)
 
 	return nil
 }
@@ -114,4 +118,14 @@ func (g *GWF) startLoggers() (*log.Logger, *log.Logger) {
 	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	return infoLog, errorLog
+}
+
+func (g *GWF) createRenderer(gw *GWF) *render.Render {
+	myRenderer := render.Render{
+		Renderer: gw.config.renderer,
+		RootPath: gw.RootPath,
+		Port:     gw.config.port,
+	}
+
+	return &myRenderer
 }
