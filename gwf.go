@@ -68,7 +68,7 @@ func (g *GWF) New(rootPath string) error {
 		renderer: os.Getenv("RENDERER"),
 	}
 
-	g.Render = g.createRenderer(g)
+	g.createRenderer()
 
 	return nil
 }
@@ -120,12 +120,12 @@ func (g *GWF) startLoggers() (*log.Logger, *log.Logger) {
 	return infoLog, errorLog
 }
 
-func (g *GWF) createRenderer(gw *GWF) *render.Render {
+func (g *GWF) createRenderer() {
 	myRenderer := render.Render{
-		Renderer: gw.config.renderer,
-		RootPath: gw.RootPath,
-		Port:     gw.config.port,
+		Renderer: g.config.renderer,
+		RootPath: g.RootPath,
+		Port:     g.config.port,
 	}
 
-	return &myRenderer
+	g.Render = &myRenderer
 }
