@@ -9,13 +9,17 @@ import (
 	"time"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/alexedwards/scs/v2"
 	"github.com/ck3g/gwf/render"
+	"github.com/ck3g/gwf/session"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 )
 
 const version = "0.0.1"
 
+// GWF is the overall type for the GoWebFramework package.
+// Members that are exported in this type are available to any application that uses it.
 type GWF struct {
 	AppName  string
 	Debug    bool
@@ -25,13 +29,16 @@ type GWF struct {
 	RootPath string
 	Routes   *chi.Mux
 	Render   *render.Render
+	Session  *scs.SessionManager
 	JetViews *jet.Set
 	config   config
 }
 
 type config struct {
-	port     string
-	renderer string
+	port        string
+	renderer    string
+	cookie      cookieConfig
+	sessionType string
 }
 
 func (g *GWF) New(rootPath string) error {
@@ -68,7 +75,24 @@ func (g *GWF) New(rootPath string) error {
 	g.config = config{
 		port:     os.Getenv("PORT"),
 		renderer: os.Getenv("RENDERER"),
+		cookie: cookieConfig{
+			name:     os.Getenv("COOKIE_NAME"),
+			lifetime: os.Getenv("COOKIE_LIFETIME"),
+			persist:  os.Getenv("COOKIE_PERSISTS"),
+			secure:   os.Getenv("COOKIE_SECURE"),
+		},
+		sessionType: os.Getenv("SESSION_TYPE"),
 	}
+
+	// create session
+	sess := session.Session{
+		CookieLifetime: g.config.cookie.lifetime,
+		CookiePersist:  g.config.cookie.persist,
+		CookieName:     g.config.cookie.name,
+		SessionType:    g.config.sessionType,
+	}
+
+	g.Session = sess.InitSession()
 
 	var views = jet.NewSet(
 		jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),
