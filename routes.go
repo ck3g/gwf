@@ -17,6 +17,7 @@ func (g *GWF) routes() http.Handler {
 	}
 
 	mux.Use(middleware.Recoverer)
+	mux.Use(g.SessionLoad)
 
 	return mux
 }

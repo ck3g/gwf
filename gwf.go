@@ -80,6 +80,7 @@ func (g *GWF) New(rootPath string) error {
 			lifetime: os.Getenv("COOKIE_LIFETIME"),
 			persist:  os.Getenv("COOKIE_PERSISTS"),
 			secure:   os.Getenv("COOKIE_SECURE"),
+			domain:   os.Getenv("COOKIE_DOMAIN"),
 		},
 		sessionType: os.Getenv("SESSION_TYPE"),
 	}
@@ -90,6 +91,7 @@ func (g *GWF) New(rootPath string) error {
 		CookiePersist:  g.config.cookie.persist,
 		CookieName:     g.config.cookie.name,
 		SessionType:    g.config.sessionType,
+		CookieDomain:   g.config.cookie.domain,
 	}
 
 	g.Session = sess.InitSession()
