@@ -30,6 +30,7 @@ type GWF struct {
 	Routes   *chi.Mux
 	Render   *render.Render
 	Session  *scs.SessionManager
+	DB       Database
 	JetViews *jet.Set
 	config   config
 }
@@ -39,6 +40,7 @@ type config struct {
 	renderer    string
 	cookie      cookieConfig
 	sessionType string
+	database    databaseConfig
 }
 
 func (g *GWF) New(rootPath string) error {
@@ -65,6 +67,21 @@ func (g *GWF) New(rootPath string) error {
 
 	// create loggers
 	infoLog, errorLog := g.startLoggers()
+
+	// connect to database
+	if os.Getenv("DATABASE_TYPE") != "" {
+		db, err := g.OpenDB(os.Getenv("DATABASE_TYPE"), g.BuildDSN())
+		if err != nil {
+			errorLog.Println(err)
+			os.Exit(1)
+		}
+
+		g.DB = Database{
+			DatabaseType: os.Getenv("DATABASE_TYPE"),
+			Pool:         db,
+		}
+	}
+
 	g.InfoLog = infoLog
 	g.ErrorLog = errorLog
 	g.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
@@ -83,6 +100,10 @@ func (g *GWF) New(rootPath string) error {
 			domain:   os.Getenv("COOKIE_DOMAIN"),
 		},
 		sessionType: os.Getenv("SESSION_TYPE"),
+		database: databaseConfig{
+			database: os.Getenv("DATABASE_TYPE"),
+			dsn:      g.BuildDSN(),
+		},
 	}
 
 	// create session
@@ -164,4 +185,29 @@ func (g *GWF) createRenderer() {
 	}
 
 	g.Render = &myRenderer
+}
+
+func (g *GWF) BuildDSN() string {
+	var dsn string
+
+	switch os.Getenv("DATABASE_TYPE") {
+	case "postgres", "postgresql":
+		dsn = fmt.Sprintf(
+			"host=%s port=%s user=%s dbname=%s sslmode=%s timezone=UTC connect_timeout=5",
+			os.Getenv("DATABASE_HOST"),
+			os.Getenv("DATABASE_PORT"),
+			os.Getenv("DATABASE_USER"),
+			os.Getenv("DATABASE_NAME"),
+			os.Getenv("DATABASE_SSL_MODE"),
+		)
+
+		if os.Getenv("DATABASE_PASS") != "" {
+			dsn = fmt.Sprintf("%s password=%s", dsn, os.Getenv("DATABASE_PASS"))
+		}
+
+	default:
+
+	}
+
+	return dsn
 }
