@@ -1,6 +1,25 @@
 package gwf
 
-import "os"
+import (
+	"crypto/rand"
+	"os"
+)
+
+const (
+	randomString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0987654321_+"
+)
+
+// RandomString generates a random string n from values in the const randomString
+func (g *GWF) RandomString(n int) string {
+	s, r := make([]rune, n), []rune(randomString)
+	for i := range s {
+		p, _ := rand.Prime(rand.Reader, len(r))
+		x, y := p.Uint64(), uint64(len(r))
+		s[i] = r[x%y]
+	}
+
+	return string(s)
+}
 
 func (g *GWF) CreateDirIfNotExist(path string) error {
 	const mode = 0755
