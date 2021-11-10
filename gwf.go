@@ -184,6 +184,7 @@ func (g *GWF) createRenderer() {
 		RootPath: g.RootPath,
 		Port:     g.config.port,
 		JetViews: g.JetViews,
+		Session:  g.Session,
 	}
 
 	g.Render = &myRenderer
