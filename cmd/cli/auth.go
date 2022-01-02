@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 func doAuth() error {
@@ -52,6 +54,12 @@ func doAuth() error {
 	if err != nil {
 		exitGracefully(err)
 	}
+
+	color.Yellow("	- users, tokens, and remember_tokens migrations created and executed")
+	color.Yellow("	- users, and tokens models created")
+	color.Yellow("	- auth middleware created")
+	color.Yellow("")
+	color.Yellow("Don't forget to add user and token models in data/models.go, and to appropriate middleware to your routes!")
 
 	return nil
 }
