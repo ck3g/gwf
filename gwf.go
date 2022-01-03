@@ -113,6 +113,7 @@ func (g *GWF) New(rootPath string) error {
 		CookieName:     g.config.cookie.name,
 		SessionType:    g.config.sessionType,
 		CookieDomain:   g.config.cookie.domain,
+		DBPool:         g.DB.Pool,
 	}
 
 	g.Session = sess.InitSession()
