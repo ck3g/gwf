@@ -10,9 +10,11 @@ import (
 
 	"github.com/CloudyKit/jet/v6"
 	"github.com/alexedwards/scs/v2"
+	"github.com/ck3g/gwf/cache"
 	"github.com/ck3g/gwf/render"
 	"github.com/ck3g/gwf/session"
 	"github.com/go-chi/chi/v5"
+	"github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
 )
 
@@ -34,6 +36,7 @@ type GWF struct {
 	JetViews      *jet.Set
 	config        config
 	EncryptionKey string
+	Cache         cache.Cache
 }
 
 type config struct {
@@ -42,6 +45,7 @@ type config struct {
 	cookie      cookieConfig
 	sessionType string
 	database    databaseConfig
+	redis       redisConfig
 }
 
 func (g *GWF) New(rootPath string) error {
@@ -83,6 +87,11 @@ func (g *GWF) New(rootPath string) error {
 		}
 	}
 
+	if os.Getenv("CACHE") == "redis" {
+		myRedisCache := g.createClientRedisCache()
+		g.Cache = myRedisCache
+	}
+
 	g.InfoLog = infoLog
 	g.ErrorLog = errorLog
 	g.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
@@ -104,6 +113,11 @@ func (g *GWF) New(rootPath string) error {
 		database: databaseConfig{
 			database: os.Getenv("DATABASE_TYPE"),
 			dsn:      g.BuildDSN(),
+		},
+		redis: redisConfig{
+			host:     os.Getenv("REDIS_HOST"),
+			password: os.Getenv("REDIS_PASSWORD"),
+			prefix:   os.Getenv("REDIS_PREFIX"),
 		},
 	}
 
@@ -191,6 +205,33 @@ func (g *GWF) createRenderer() {
 	}
 
 	g.Render = &myRenderer
+}
+
+func (g *GWF) createClientRedisCache() *cache.RedisCache {
+	cacheClient := cache.RedisCache{
+		Conn:   g.createRedisPool(),
+		Prefix: g.config.redis.prefix,
+	}
+
+	return &cacheClient
+}
+
+func (g *GWF) createRedisPool() *redis.Pool {
+	return &redis.Pool{
+		MaxIdle:     50,
+		MaxActive:   10000,
+		IdleTimeout: 240 * time.Second,
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial("tcp",
+				g.config.redis.host,
+				redis.DialPassword(g.config.redis.password))
+		},
+
+		TestOnBorrow: func(conn redis.Conn, t time.Time) error {
+			_, err := conn.Do("PING")
+			return err
+		},
+	}
 }
 
 func (g *GWF) BuildDSN() string {
