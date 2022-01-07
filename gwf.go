@@ -20,6 +20,8 @@ import (
 
 const version = "0.0.1"
 
+var myRedisCache *cache.RedisCache
+
 // GWF is the overall type for the GoWebFramework package.
 // Members that are exported in this type are available to any application that uses it.
 type GWF struct {
@@ -87,8 +89,8 @@ func (g *GWF) New(rootPath string) error {
 		}
 	}
 
-	if os.Getenv("CACHE") == "redis" {
-		myRedisCache := g.createClientRedisCache()
+	if os.Getenv("CACHE") == "redis" || os.Getenv("SESSION_TYPE") == "redis" {
+		myRedisCache = g.createClientRedisCache()
 		g.Cache = myRedisCache
 	}
 
@@ -128,7 +130,14 @@ func (g *GWF) New(rootPath string) error {
 		CookieName:     g.config.cookie.name,
 		SessionType:    g.config.sessionType,
 		CookieDomain:   g.config.cookie.domain,
-		DBPool:         g.DB.Pool,
+	}
+
+	switch g.config.sessionType {
+	case "redis":
+		sess.RedisPool = myRedisCache.Conn
+
+	case "mysql", "mariadb", "postgres", "postgresql":
+		sess.DBPool = g.DB.Pool
 	}
 
 	g.Session = sess.InitSession()

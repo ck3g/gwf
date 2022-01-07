@@ -18,6 +18,7 @@ require (
 	github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53 // indirect
 	github.com/alexedwards/scs/mysqlstore v0.0.0-20211203064041-370cc303b69f // indirect
 	github.com/alexedwards/scs/postgresstore v0.0.0-20211203064041-370cc303b69f // indirect
+	github.com/alexedwards/scs/redisstore v0.0.0-20211203064041-370cc303b69f // indirect
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
 	github.com/alicebob/miniredis/v2 v2.17.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
