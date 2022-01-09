@@ -96,6 +96,9 @@ func (g *GWF) New(rootPath string) error {
 		}
 	}
 
+	scheduler := cron.New()
+	g.Scheduler = scheduler
+
 	if os.Getenv("CACHE") == "redis" || os.Getenv("SESSION_TYPE") == "redis" {
 		myRedisCache = g.createClientRedisCache()
 		g.Cache = myRedisCache
