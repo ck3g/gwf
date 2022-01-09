@@ -13,14 +13,17 @@ import (
 	"github.com/ck3g/gwf/cache"
 	"github.com/ck3g/gwf/render"
 	"github.com/ck3g/gwf/session"
+	"github.com/dgraph-io/badger/v3"
 	"github.com/go-chi/chi/v5"
 	"github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
+	"github.com/robfig/cron/v3"
 )
 
 const version = "0.0.1"
 
 var myRedisCache *cache.RedisCache
+var myBadgerCache *cache.BadgerCache
 
 // GWF is the overall type for the GoWebFramework package.
 // Members that are exported in this type are available to any application that uses it.
@@ -39,6 +42,7 @@ type GWF struct {
 	config        config
 	EncryptionKey string
 	Cache         cache.Cache
+	Scheduler     *cron.Cron
 }
 
 type config struct {
@@ -92,6 +96,19 @@ func (g *GWF) New(rootPath string) error {
 	if os.Getenv("CACHE") == "redis" || os.Getenv("SESSION_TYPE") == "redis" {
 		myRedisCache = g.createClientRedisCache()
 		g.Cache = myRedisCache
+	}
+
+	if os.Getenv("CACHE") == "badger" {
+		myBadgerCache = g.createClientBadgerCache()
+		g.Cache = myBadgerCache
+
+		_, err := g.Scheduler.AddFunc("@daily", func() {
+			_ = myBadgerCache.Conn.RunValueLogGC(0.7)
+		})
+
+		if err != nil {
+			return err
+		}
 	}
 
 	g.InfoLog = infoLog
@@ -234,6 +251,14 @@ func (g *GWF) createClientRedisCache() *cache.RedisCache {
 	return &cacheClient
 }
 
+func (g *GWF) createClientBadgerCache() *cache.BadgerCache {
+	cacheClient := cache.BadgerCache{
+		Conn: g.createBadgerConn(),
+	}
+
+	return &cacheClient
+}
+
 func (g *GWF) createRedisPool() *redis.Pool {
 	return &redis.Pool{
 		MaxIdle:     50,
@@ -250,6 +275,15 @@ func (g *GWF) createRedisPool() *redis.Pool {
 			return err
 		},
 	}
+}
+
+func (g *GWF) createBadgerConn() *badger.DB {
+	db, err := badger.Open(badger.DefaultOptions(g.RootPath + "/tmp/badger"))
+	if err != nil {
+		return nil
+	}
+
+	return db
 }
 
 func (g *GWF) BuildDSN() string {
