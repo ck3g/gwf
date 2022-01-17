@@ -114,8 +114,8 @@ func doMake(arg2, arg3 string) error {
 			exitGracefully(errors.New("you must give the mail template a name"))
 		}
 
-		htmlMail := g.RootPath + "/mail/" + strings.ToLower(arg3) + "html.tmpl"
-		plainMail := g.RootPath + "/mail/" + strings.ToLower(arg3) + "plain.tmpl"
+		htmlMail := g.RootPath + "/mail/" + strings.ToLower(arg3) + ".html.tmpl"
+		plainMail := g.RootPath + "/mail/" + strings.ToLower(arg3) + ".plain.tmpl"
 
 		err := copyFileFromTemplate("templates/mailer/mail.html.tmpl", htmlMail)
 		if err != nil {
