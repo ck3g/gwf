@@ -13,3 +13,7 @@ coverage:
 ## build_cli: builds the command line tool GoWebFramework and copies it to myapp
 build_cli:
 	@go build -o ../gwf-demo/gwf ./cmd/cli
+
+## build: builds the command line tool dist directory
+build:
+	@go build -o ./dist/gwf ./cmd/cli
