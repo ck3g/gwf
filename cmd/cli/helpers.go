@@ -103,7 +103,7 @@ func updateSourceFiles(path string, fi os.FileInfo, err error) error {
 			return err
 		}
 
-		newContents := strings.Replace(string(read), "test", appURL, -1)
+		newContents := strings.Replace(string(read), "gwftemplate", appURL, -1)
 
 		err = os.WriteFile(path, []byte(newContents), 0)
 		if err != nil {

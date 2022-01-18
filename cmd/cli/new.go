@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/fatih/color"
@@ -87,8 +88,7 @@ func doNew(appName string) {
 		exitGracefully(err)
 	}
 
-	mod := string(data)
-	mod = strings.ReplaceAll(mod, "test", appURL)
+	mod := strings.ReplaceAll(string(data), "gwftemplate", appURL)
 	err = os.WriteFile("./"+appName+"/go.mod", []byte(mod), 0)
 	if err != nil {
 		exitGracefully(err)
@@ -100,4 +100,13 @@ func doNew(appName string) {
 	updateSource()
 
 	// run go mod tidy in the project directory
+	color.Yellow("\tRunning go mod tidy...")
+	cmd := exec.Command("go", "mod", "tidy")
+	err = cmd.Start()
+	if err != nil {
+		exitGracefully(err)
+	}
+
+	color.Green("Done building " + appURL)
+	color.Green("Go build something awesome")
 }
