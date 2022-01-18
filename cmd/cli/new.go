@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -10,8 +11,11 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
+var appURL string
+
 func doNew(appName string) {
 	appName = strings.ToLower(appName)
+	appURL = appName
 
 	// sanitize the application name (convert url to single word)
 	if strings.Contains(appName, "/") {
@@ -56,8 +60,39 @@ func doNew(appName string) {
 	}
 
 	// create a Makefile
+	// Optional: Create one for windows, by checking `runtime.GOOS == "windows"`
+	source, err := os.Open(fmt.Sprintf("./%s/Makefile", appName))
+	if err != nil {
+		exitGracefully(err)
+	}
+	defer source.Close()
+
+	destination, err := os.Create(fmt.Sprintf("./%s/Makefile", appName))
+	if err != nil {
+		exitGracefully(err)
+	}
+	defer destination.Close()
+
+	_, err = io.Copy(destination, source)
+	if err != nil {
+		exitGracefully(err)
+	}
+	// If using separate Makefiles
+	// os.Remove("./" + appName + "/Makefile.windows")
 
 	// update the go.mod file
+	color.Yellow("\tCreating go.mod file...")
+	data, err = os.ReadFile("./" + appName + "/go.mod")
+	if err != nil {
+		exitGracefully(err)
+	}
+
+	mod := string(data)
+	mod = strings.ReplaceAll(mod, "gwftemplate", appURL)
+	err = copyDataToFile([]byte(mod), "./"+appName+"/go.mod")
+	if err != nil {
+		exitGracefully(err)
+	}
 
 	// update the existing .go files with correct name and imports
 
