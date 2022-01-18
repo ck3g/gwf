@@ -88,13 +88,16 @@ func doNew(appName string) {
 	}
 
 	mod := string(data)
-	mod = strings.ReplaceAll(mod, "gwftemplate", appURL)
-	err = copyDataToFile([]byte(mod), "./"+appName+"/go.mod")
+	mod = strings.ReplaceAll(mod, "test", appURL)
+	err = os.WriteFile("./"+appName+"/go.mod", []byte(mod), 0)
 	if err != nil {
 		exitGracefully(err)
 	}
 
 	// update the existing .go files with correct name and imports
+	color.Yellow("\tUpdating source files...")
+	os.Chdir("./" + appName)
+	updateSource()
 
 	// run go mod tidy in the project directory
 }
