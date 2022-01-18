@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -62,22 +61,22 @@ func doNew(appName string) {
 
 	// create a Makefile
 	// Optional: Create one for windows, by checking `runtime.GOOS == "windows"`
-	source, err := os.Open(fmt.Sprintf("./%s/Makefile", appName))
-	if err != nil {
-		exitGracefully(err)
-	}
-	defer source.Close()
+	// source, err := os.Open(fmt.Sprintf("./%s/Makefile.windows", appName))
+	// if err != nil {
+	// 	exitGracefully(err)
+	// }
+	// defer source.Close()
 
-	destination, err := os.Create(fmt.Sprintf("./%s/Makefile", appName))
-	if err != nil {
-		exitGracefully(err)
-	}
-	defer destination.Close()
+	// destination, err := os.Create(fmt.Sprintf("./%s/Makefile", appName))
+	// if err != nil {
+	// 	exitGracefully(err)
+	// }
+	// defer destination.Close()
 
-	_, err = io.Copy(destination, source)
-	if err != nil {
-		exitGracefully(err)
-	}
+	// _, err = io.Copy(destination, source)
+	// if err != nil {
+	// 	exitGracefully(err)
+	// }
 	// If using separate Makefiles
 	// os.Remove("./" + appName + "/Makefile.windows")
 
